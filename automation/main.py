@@ -179,17 +179,20 @@ def submit_to_google(url):
     except Exception as e: print(f"      ⚠️ Google Indexing Error: {e}")
 
 # ==========================================
-# 🎨 IMAGE GENERATOR (METODE POLLINATIONS FLUX)
+# 🎨 IMAGE GENERATOR (NO POLLINATIONS - HYBRID ENGINE)
 # ==========================================
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
     
-    # 1. Bersihkan Prompt
+    # 1. Bersihkan Prompt & Paksa Style Realistis
+    # Kita hapus karakter aneh dan tambahkan keywords agar hasilnya seperti foto Bloomberg/Reuters
     clean_prompt = prompt.lower().replace('"', '').replace("'", "")
     
-    # 2. FORCE STYLE FINANCE (Sama seperti Jeep tapi konteks saham)
-    # Ini kuncinya agar gambar terlihat PRO, bukan kartun.
-    forced_style = "financial concept art, stock market trading chart overlay, wall street environment, digital currency visualization, business professionalism, cinematic lighting, 8k realistic, bloomberg style"
+    forced_style = (
+        "photorealistic, 8k, cinematic lighting, macro photography, "
+        "stock market chart background, bokeh, professional financial news style, "
+        "sharp focus, fujifilm color grading, highly detailed, no text"
+    )
     
     final_prompt = f"{clean_prompt}, {forced_style}"
     
@@ -200,38 +203,62 @@ def generate_robust_image(prompt, filename):
 
     print(f"      🎨 Generating Image: {clean_prompt[:30]}...")
 
-    # STRATEGY 1: POLLINATIONS FLUX (Metode Terbaik)
+    # --- STRATEGY 1: HERCAI (AI Generation - Free Alternative) ---
+    # Menggantikan Pollinations dengan Hercai. 
+    # Hercai menggunakan berbagai model (v3/lexica) yang gratis.
     try:
-        seed = random.randint(1, 99999)
-        # Menggunakan model 'flux' yang sangat bagus untuk detail
-        poly_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(final_prompt)}?width=1280&height=720&model=flux&seed={seed}&nologo=true"
-        resp = requests.get(poly_url, headers=headers, timeout=25)
+        # Encode prompt agar aman di URL
+        encoded_prompt = requests.utils.quote(final_prompt)
+        # Menggunakan endpoint v3 text2image
+        hercai_url = f"https://hercai.onrender.com/v3/text2image?prompt={encoded_prompt}"
+        
+        # Timeout diset 60 detik karena free tier server kadang butuh waktu bangun (cold start)
+        resp = requests.get(hercai_url, headers=headers, timeout=60)
+        
+        if resp.status_code == 200:
+            data = resp.json()
+            if "url" in data and data["url"]:
+                img_url = data["url"]
+                
+                # Download gambar hasil generate
+                img_resp = requests.get(img_url, headers=headers, timeout=30)
+                if img_resp.status_code == 200:
+                    img = Image.open(BytesIO(img_resp.content)).convert("RGB")
+                    
+                    # Resize standar HD (1280x720) agar loading web cepat & konsisten
+                    img = img.resize((1280, 720), Image.LANCZOS)
+                    
+                    img.save(output_path, "WEBP", quality=90)
+                    print("      ✅ Image Saved (Source: Hercai AI)")
+                    return f"/images/{filename}"
+    except Exception as e:
+        print(f"      ⚠️ Hercai AI Failed, switching to Stock Photo... ({str(e)[:50]})")
+
+    # --- STRATEGY 2: LOREMFLICKR (Real Stock Photos - Fallback) ---
+    # Jika AI gagal/down, kita ambil FOTO ASLI dari LoremFlickr.
+    # Ini sangat cocok untuk niche Finance karena hasilnya pasti relevan & profesional.
+    try:
+        # Rotasi keyword agar gambarnya tidak itu-itu saja
+        fallback_keywords = ["finance", "stockmarket", "wallstreet", "bitcoin", "business", "office", "money"]
+        chosen_keyword = random.choice(fallback_keywords)
+        
+        # URL ini akan mereturn gambar random sesuai keyword berukuran 1280x720
+        flickr_url = f"https://loremflickr.com/1280/720/{chosen_keyword}"
+        
+        print(f"      🔄 Fetching Real Stock Photo ({chosen_keyword})...")
+        resp = requests.get(flickr_url, headers=headers, timeout=30, allow_redirects=True)
         
         if resp.status_code == 200:
             img = Image.open(BytesIO(resp.content)).convert("RGB")
             img.save(output_path, "WEBP", quality=90)
-            print("      ✅ Image Saved (Source: Pollinations Flux)")
-            # 🔥 WAJIB ADA SLASH DI DEPAN
+            print(f"      ✅ Image Saved (Source: LoremFlickr - {chosen_keyword})")
             return f"/images/{filename}"
-    except Exception: pass
+    except Exception as e:
+        print(f"      ⚠️ Stock Photo Failed: {e}")
 
-    # STRATEGY 2: HERCAI (Fallback)
-    try:
-        hercai_url = f"https://hercai.onrender.com/v3/text2image?prompt={requests.utils.quote(final_prompt)}"
-        resp = requests.get(hercai_url, headers=headers, timeout=40)
-        
-        if resp.status_code == 200:
-            data = resp.json()
-            if "url" in data:
-                img_data = requests.get(data["url"], headers=headers, timeout=20).content
-                img = Image.open(BytesIO(img_data)).convert("RGB")
-                img.save(output_path, "WEBP", quality=90)
-                print("      ✅ Image Saved (Source: Hercai AI)")
-                # 🔥 WAJIB ADA SLASH DI DEPAN
-                return f"/images/{filename}"
-    except Exception: pass
-
-    # DEFAULT IMAGE (Jika Gagal)
+    # --- STRATEGY 3: DEFAULT LOCAL IMAGE (Last Resort) ---
+    # Pastikan Anda punya gambar ini di folder static/images/
+    print("      ⚠️ Using Default Static Image")
     return "/images/default-finance.webp"
 
 # ==========================================
