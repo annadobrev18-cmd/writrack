@@ -25,7 +25,7 @@ except ImportError:
     GOOGLE_LIBS_AVAILABLE = False
 
 # ==========================================
-# ⚙️ CONFIGURATION (FINANCE / US MARKET)
+# ⚙️ CONFIGURATION (FINANCE / WRITRACK)
 # ==========================================
 
 GROQ_KEYS_RAW = os.environ.get("GROQ_API_KEY", "") 
@@ -65,7 +65,7 @@ IMAGE_DIR = "static/images"
 DATA_DIR = "automation/data"
 MEMORY_FILE = f"{DATA_DIR}/link_memory.json"
 
-# 🔥 TARGET: 2 Artikel per sumber
+# 🔥 TARGET: 2 Artikel per sumber (Quality Focus)
 TARGET_PER_SOURCE = 2
 
 # ==========================================
@@ -99,7 +99,7 @@ def clean_ai_content(text):
     text = re.sub(r'\n```$', '', text)
     text = text.replace("```", "")
     
-    # Hapus Header Basi & Disclaimer AI
+    # Hapus Header Basi & Disclaimer AI (Agar bersih)
     text = re.sub(r'^##\s*(Introduction|Conclusion|Summary|The Verdict|Final Thoughts|Disclaimer)\s*\n', '', text, flags=re.MULTILINE|re.IGNORECASE)
     
     text = text.replace("<h1>", "# ").replace("</h1>", "\n")
@@ -179,14 +179,18 @@ def submit_to_google(url):
     except Exception as e: print(f"      ⚠️ Google Indexing Error: {e}")
 
 # ==========================================
-# 🎨 FINANCE IMAGE GENERATOR (PATH FIXED)
+# 🎨 IMAGE GENERATOR (METODE POLLINATIONS FLUX)
 # ==========================================
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
+    
+    # 1. Bersihkan Prompt
     clean_prompt = prompt.lower().replace('"', '').replace("'", "")
     
-    # Force Style Professional
+    # 2. FORCE STYLE FINANCE (Sama seperti Jeep tapi konteks saham)
+    # Ini kuncinya agar gambar terlihat PRO, bukan kartun.
     forced_style = "financial concept art, stock market trading chart overlay, wall street environment, digital currency visualization, business professionalism, cinematic lighting, 8k realistic, bloomberg style"
+    
     final_prompt = f"{clean_prompt}, {forced_style}"
     
     headers = {
@@ -196,23 +200,26 @@ def generate_robust_image(prompt, filename):
 
     print(f"      🎨 Generating Image: {clean_prompt[:30]}...")
 
-    # 1. POLLINATIONS
+    # STRATEGY 1: POLLINATIONS FLUX (Metode Terbaik)
     try:
         seed = random.randint(1, 99999)
+        # Menggunakan model 'flux' yang sangat bagus untuk detail
         poly_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(final_prompt)}?width=1280&height=720&model=flux&seed={seed}&nologo=true"
         resp = requests.get(poly_url, headers=headers, timeout=25)
+        
         if resp.status_code == 200:
             img = Image.open(BytesIO(resp.content)).convert("RGB")
             img.save(output_path, "WEBP", quality=90)
             print("      ✅ Image Saved (Source: Pollinations Flux)")
-            # 🔥 FIX: GUNAKAN SLASH DEPAN AGAR PATH ABSOLUT DARI ROOT
+            # 🔥 WAJIB ADA SLASH DI DEPAN
             return f"/images/{filename}"
     except Exception: pass
 
-    # 2. HERCAI
+    # STRATEGY 2: HERCAI (Fallback)
     try:
         hercai_url = f"https://hercai.onrender.com/v3/text2image?prompt={requests.utils.quote(final_prompt)}"
         resp = requests.get(hercai_url, headers=headers, timeout=40)
+        
         if resp.status_code == 200:
             data = resp.json()
             if "url" in data:
@@ -220,10 +227,11 @@ def generate_robust_image(prompt, filename):
                 img = Image.open(BytesIO(img_data)).convert("RGB")
                 img.save(output_path, "WEBP", quality=90)
                 print("      ✅ Image Saved (Source: Hercai AI)")
+                # 🔥 WAJIB ADA SLASH DI DEPAN
                 return f"/images/{filename}"
     except Exception: pass
 
-    # 🔥 FIX: DEFAULT IMAGE JUGA HARUS SLASH DEPAN
+    # DEFAULT IMAGE (Jika Gagal)
     return "/images/default-finance.webp"
 
 # ==========================================
@@ -348,21 +356,21 @@ def main():
                 print("      ❌ JSON Parse Error")
                 continue
 
-            # 1. Generate Image
+            # 1. Generate Image (Dengan Metode Pollinations Flux)
             image_prompt = data.get('main_keyword', clean_title)
             final_img_path = generate_robust_image(image_prompt, f"{slug}.webp")
             
-            # 2. Clean Content
+            # 2. Clean Content (Hapus Disclaimer buatan AI)
             clean_body = clean_ai_content(data['content_body'])
             
-            # 3. Inject Links
+            # 3. Inject Links (Silo)
             final_body_with_links = inject_links_into_body(clean_body, data['title'])
             
             # 4. Fallback Category
             if data.get('category') not in VALID_CATEGORIES:
                 data['category'] = "Stock Market"
 
-            # 5. HARDCODED DISCLAIMER (The ONLY one that appears)
+            # 5. HARDCODED DISCLAIMER (Satu-satunya yang muncul)
             footer_disclaimer = """
 ---
 ### **Disclaimer**
@@ -403,6 +411,7 @@ weight: {random.randint(1, 10)}
             print(f"      ✅ Published: {slug}")
             processed_count += 1
             
+            # Delay natural
             print("      💤 Sleeping for 60s (Deep Dive Processing)...")
             time.sleep(60)
 
