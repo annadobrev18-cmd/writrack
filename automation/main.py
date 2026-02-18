@@ -65,7 +65,7 @@ IMAGE_DIR = "static/images"
 DATA_DIR = "automation/data"
 MEMORY_FILE = f"{DATA_DIR}/link_memory.json"
 
-# 🔥 TARGET: 2 Artikel panjang per sumber (Quality over Quantity)
+# 🔥 TARGET: 2 Artikel per sumber
 TARGET_PER_SOURCE = 2
 
 # ==========================================
@@ -179,7 +179,7 @@ def submit_to_google(url):
     except Exception as e: print(f"      ⚠️ Google Indexing Error: {e}")
 
 # ==========================================
-# 🎨 FINANCE IMAGE GENERATOR (FIXED PATH)
+# 🎨 FINANCE IMAGE GENERATOR (PATH FIXED)
 # ==========================================
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
@@ -205,8 +205,8 @@ def generate_robust_image(prompt, filename):
             img = Image.open(BytesIO(resp.content)).convert("RGB")
             img.save(output_path, "WEBP", quality=90)
             print("      ✅ Image Saved (Source: Pollinations Flux)")
-            # 🔥 FIX: HAPUS SLASH DEPAN
-            return f"images/{filename}"
+            # 🔥 FIX: GUNAKAN SLASH DEPAN AGAR PATH ABSOLUT DARI ROOT
+            return f"/images/{filename}"
     except Exception: pass
 
     # 2. HERCAI
@@ -220,12 +220,11 @@ def generate_robust_image(prompt, filename):
                 img = Image.open(BytesIO(img_data)).convert("RGB")
                 img.save(output_path, "WEBP", quality=90)
                 print("      ✅ Image Saved (Source: Hercai AI)")
-                # 🔥 FIX: HAPUS SLASH DEPAN
-                return f"images/{filename}"
+                return f"/images/{filename}"
     except Exception: pass
 
-    # 🔥 FIX: HAPUS SLASH DEPAN DI DEFAULT
-    return "images/default-finance.webp"
+    # 🔥 FIX: DEFAULT IMAGE JUGA HARUS SLASH DEPAN
+    return "/images/default-finance.webp"
 
 # ==========================================
 # 🧠 CONTENT ENGINE (1500 WORDS + NO AI DISCLAIMER)
@@ -353,10 +352,10 @@ def main():
             image_prompt = data.get('main_keyword', clean_title)
             final_img_path = generate_robust_image(image_prompt, f"{slug}.webp")
             
-            # 2. Clean Content (Hapus Disclaimer buatan AI)
+            # 2. Clean Content
             clean_body = clean_ai_content(data['content_body'])
             
-            # 3. Inject Links (Silo)
+            # 3. Inject Links
             final_body_with_links = inject_links_into_body(clean_body, data['title'])
             
             # 4. Fallback Category
@@ -404,7 +403,6 @@ weight: {random.randint(1, 10)}
             print(f"      ✅ Published: {slug}")
             processed_count += 1
             
-            # Delay natural
             print("      💤 Sleeping for 60s (Deep Dive Processing)...")
             time.sleep(60)
 
