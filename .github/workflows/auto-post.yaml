@@ -1,0 +1,71 @@
+name: Auto Post writrack
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Jalan setiap 6 jam
+  workflow_dispatch:      # Bisa dijalankan manual
+
+permissions:
+  contents: write
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12' 
+
+      - name: Install Dependencies
+        # Menambahkan error handling jika file requirements tidak ada
+        run: |
+          if [ -f automation/requirements.txt ]; then
+            pip install -r automation/requirements.txt
+          else
+            echo "requirements.txt not found!"
+            exit 1
+          fi
+
+      - name: Run Content Engine
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GOOGLE_INDEXING_KEY: ${{ secrets.GOOGLE_INDEXING_KEY }} 
+          # Pastikan INDEXNOW_KEY sesuai dengan file txt di folder static/public
+          INDEXNOW_KEY: "e74819b68a0f40e98f6ec3dc24f610f0"
+        run: python automation/main.py
+
+      # DEBUGGING: Cek apakah file benar-benar tergenerate sebelum commit
+      - name: Verify Content Generation
+        run: |
+          echo "Checking content folder..."
+          ls -la content/articles/ | head -n 5
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "writrackBot"
+          git config --global user.email "bot@writrack.com"
+          
+          git add .
+          
+          # Cek status sebelum commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit. Bot sleeping."
+          else
+            echo "Changes detected. Committing..."
+            
+            # --- PERBAIKAN UTAMA DI SINI ---
+            # Hapus '[skip ci]' agar Cloudflare Pages mendeteksi update & melakukan build ulang
+            git commit -m "⚽ New Finance Update"
+            
+            # Pull rebase untuk mencegah konflik jika ada update manual
+            git pull --rebase origin main
+            
+            # Push ke repository
+            git push origin main
+          fi
