@@ -5,24 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-    <!-- 1. PRECONNECT & PRELOAD (CRITICAL PERFORMANCE) -->
+    <!-- 1. PRECONNECT & PRELOAD (SPEED IS MONEY) -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://s10.histats.com">
-    <!-- Preload Tailwind Script agar tidak render blocking -->
     <link rel="preload" href="https://cdn.tailwindcss.com?plugins=typography,line-clamp" as="script">
 
-    <!-- 2. SEO TITLE (Rapi tanpa Spasi Berlebih) -->
-    <title>{{ if .IsHome }}{{ .Site.Title }} - Breaking Sports News, Transfers & Tactical Analysis{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+    <!-- 2. SEO TITLE (FINANCE OPTIMIZED) -->
+    <title>
+        {{ if .IsHome }}
+            {{ .Site.Title }} - US Market Insights, Investing & Economy
+        {{ else }}
+            {{ .Title }} | {{ .Site.Title }}
+        {{ end }}
+    </title>
 
-    <!-- 3. META DESCRIPTION (SAFE MODE) -->
-    <!-- 'plainify' membuang tag HTML, 'htmlUnescape' membersihkan karakter aneh -->
+    <!-- 3. META DESCRIPTION -->
     <meta name="description" content="{{ if .IsHome }}{{ .Site.Params.description }}{{ else }}{{ .Params.description | default .Summary | plainify | htmlUnescape }}{{ end }}">
+    <meta name="keywords" content="{{ if .Params.keywords }}{{ .Params.keywords }}{{ else }}{{ .Site.Params.keywords }}{{ end }}">
 
     <link rel="canonical" href="{{ .Permalink }}">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <meta name="theme-color" content="#111827">
+    
+    <!-- Warna Browser Mobile (Emerald Green untuk Keuangan) -->
+    <meta name="theme-color" content="#059669">
 
     <!-- 4. TAILWIND & FONTS -->
     <script src="https://cdn.tailwindcss.com?plugins=typography,line-clamp"></script>
@@ -30,6 +37,13 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    colors: {
+                        emerald: {
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    },
                     fontFamily: {
                         sans: ['Roboto', 'sans-serif'],
                         display: ['Libre Franklin', 'sans-serif'],
@@ -41,11 +55,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"></noscript>
 
-    <!-- 5. OPEN GRAPH (FB/WA) -->
-    <meta property="og:locale" content="{{ .Site.LanguageCode | default "en_GB" }}">
+    <!-- 5. OPEN GRAPH (FACEBOOK/LINKEDIN/WHATSAPP) -->
+    <meta property="og:locale" content="{{ .Site.LanguageCode | default "en_US" }}">
     <meta property="og:site_name" content="{{ .Site.Title }}">
     <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
-    <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }} - Football News & Analysis{{ else }}{{ .Title }}{{ end }}">
+    <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }} - Market Intelligence{{ else }}{{ .Title }}{{ end }}">
     <meta property="og:description" content="{{ if .IsHome }}{{ .Site.Params.description }}{{ else }}{{ .Params.description | default .Summary | plainify | htmlUnescape }}{{ end }}">
     <meta property="og:url" content="{{ .Permalink }}">
     
@@ -54,7 +68,8 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="675">
     {{ else }}
-    <meta property="og:image" content="{{ "images/default-football.jpg" | absURL }}">
+    <!-- Pastikan file ini ada: static/images/default-finance.webp -->
+    <meta property="og:image" content="{{ "images/default-finance.webp" | absURL }}">
     {{ end }}
 
     <!-- 6. TWITTER CARDS -->
@@ -64,36 +79,38 @@
     {{ if .Params.featured_image }}
     <meta name="twitter:image" content="{{ .Params.featured_image | absURL }}">
     {{ else }}
-    <meta name="twitter:image" content="{{ "images/default-football.jpg" | absURL }}">
+    <meta name="twitter:image" content="{{ "images/default-finance.webp" | absURL }}">
     {{ end }}
 
     <!-- =======================================================
-         7. SCHEMA.ORG (JSON-LD)
+         7. SCHEMA.ORG (JSON-LD) - VITAL FOR FINANCE SEO
          ======================================================= -->
     
-    <!-- A. Homepage Schema -->
+    <!-- A. Homepage Schema (Organization) -->
     {{ if .IsHome }}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "writrack",
-      "alternateName": ["writrack", "writrack News"],
+      "@type": "NewsMediaOrganization",
+      "name": "WriTrack",
+      "alternateName": ["WriTrack Financial News", "WriTrack Market Intelligence"],
       "url": "{{ .Site.BaseURL }}",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ "favicon.svg" | absURL }}",
+        "width": 512,
+        "height": 512
+      },
       "description": "{{ .Site.Params.description }}",
-      "publisher": {
-        "@type": "Organization",
-        "name": "writrack",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "{{ "favicon.svg" | absURL }}"
-        }
-      }
+      "sameAs": [
+        "https://twitter.com/WriTrack",
+        "https://linkedin.com/company/writrack"
+      ]
     }
     </script>
     {{ end }}
 
-    <!-- B. Article Schema -->
+    <!-- B. Article Schema (NewsArticle) -->
     {{ if .IsPage }}
     <script type="application/ld+json">
     {
@@ -109,11 +126,11 @@
       "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}",
       "author": {
         "@type": "Person",
-        "name": "{{ .Params.author | default "writrack Team" }}"
+        "name": "{{ .Params.author | default "WriTrack Editorial Team" }}"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "{{ .Site.Title }}",
+        "name": "WriTrack",
         "logo": {
           "@type": "ImageObject",
           "url": "{{ "favicon.svg" | absURL }}" 
@@ -127,7 +144,7 @@
     <link rel="icon" href="{{ "favicon.svg" | absURL }}" type="image/svg+xml">
     
 </head>
-<body class="bg-white text-news-dark font-sans antialiased flex flex-col min-h-screen">
+<body class="bg-white text-gray-900 font-sans antialiased flex flex-col min-h-screen">
     {{ partial "header.html" . }}
     <main id="main-content" role="main" class="flex-grow">
         {{ block "main" . }}{{ end }}
