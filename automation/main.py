@@ -39,7 +39,7 @@ if not GROQ_API_KEYS:
     print("❌ FATAL ERROR: Groq API Key is missing!")
     exit(1)
 
-# Penulis dengan Otoritas Tinggi (E-E-A-T untuk YMYL)
+# Penulis dengan Persona Spesifik (Wall Street Style)
 AUTHOR_PROFILES = [
     "Michael Sterling (Senior Market Analyst)", 
     "Sarah Vanhouten (Certified Financial Planner - CFP)",
@@ -48,13 +48,11 @@ AUTHOR_PROFILES = [
     "Robert K. Wilson (Global Economy Observer)"
 ]
 
-# Kategori Keuangan
 VALID_CATEGORIES = [
     "Stock Market", "Personal Finance", "Crypto & Blockchain", 
     "Real Estate News", "Global Economy", "Retirement Planning", "ETF & Mutual Funds"
 ]
 
-# Sumber Berita Keuangan Kredibel (US Market)
 RSS_SOURCES = {
     "CNBC Investing": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069",
     "Yahoo Finance": "https://finance.yahoo.com/news/rssindex",
@@ -67,7 +65,7 @@ IMAGE_DIR = "static/images"
 DATA_DIR = "automation/data"
 MEMORY_FILE = f"{DATA_DIR}/link_memory.json"
 
-# 🔥 TARGET: 2 Artikel per sumber per run (Total 8 artikel)
+# 🔥 TARGET: 2 Artikel panjang per sumber (Quality over Quantity)
 TARGET_PER_SOURCE = 2
 
 # ==========================================
@@ -100,9 +98,12 @@ def clean_ai_content(text):
     text = re.sub(r'^```[a-zA-Z]*\n', '', text)
     text = re.sub(r'\n```$', '', text)
     text = text.replace("```", "")
-    # Hapus header klise
-    text = re.sub(r'^##\s*(Introduction|Conclusion|Summary|The Verdict|Final Thoughts|In Conclusion)\s*\n', '', text, flags=re.MULTILINE|re.IGNORECASE)
     
+    # HAPUS HEADER BASI & DISCLAIMER BUATAN AI
+    # Kita hapus jika AI bandel menulis Disclaimer sendiri di dalam body
+    text = re.sub(r'^##\s*(Introduction|Conclusion|Summary|The Verdict|Final Thoughts|Disclaimer)\s*\n', '', text, flags=re.MULTILINE|re.IGNORECASE)
+    
+    # Konversi HTML basic
     text = text.replace("<h1>", "# ").replace("</h1>", "\n")
     text = text.replace("<h2>", "## ").replace("</h2>", "\n")
     text = text.replace("<h3>", "### ").replace("</h3>", "\n")
@@ -112,17 +113,15 @@ def clean_ai_content(text):
     return text.strip()
 
 # ==========================================
-# 🧠 SMART SILO LINKING (FINANCE EDITION)
+# 🧠 SMART SILO LINKING
 # ==========================================
 def get_contextual_links(current_title):
     memory = load_link_memory()
     items = list(memory.items())
     if not items: return []
     
-    # Stop words keuangan
     stop_words = ['the', 'a', 'an', 'in', 'on', 'at', 'for', 'to', 'of', 'and', 'with', 'is', 'stock', 'market', 'price'] 
     keywords = [w.lower() for w in current_title.split() if w.lower() not in stop_words and len(w) > 3]
-    
     relevant_links = []
     
     for title, url in items:
@@ -142,14 +141,15 @@ def inject_links_into_body(content_body, current_title):
     links = get_contextual_links(current_title)
     if not links: return content_body
 
-    link_box = "\n\n> **💰 More Financial Insights:**\n"
+    link_box = "\n\n> **💰 Recommended Analysis:**\n"
     for title, url in links:
         link_box += f"> - [{title}]({url})\n"
     link_box += "\n"
 
     paragraphs = content_body.split('\n\n')
-    if len(paragraphs) < 4: return content_body + link_box
-    insert_pos = random.randint(1, 2) 
+    # Inject di paragraf ke-3 agar user membaca dulu
+    if len(paragraphs) < 5: return content_body + link_box
+    insert_pos = 3
     paragraphs.insert(insert_pos, link_box)
     return "\n\n".join(paragraphs)
 
@@ -182,17 +182,14 @@ def submit_to_google(url):
     except Exception as e: print(f"      ⚠️ Google Indexing Error: {e}")
 
 # ==========================================
-# 🎨 FINANCE IMAGE GENERATOR (WALL STREET STYLE)
+# 🎨 FINANCE IMAGE GENERATOR
 # ==========================================
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
-    
-    # 1. Bersihkan kata kunci yang tidak relevan
     clean_prompt = prompt.lower().replace('"', '').replace("'", "")
     
-    # 2. Force Style untuk Keuangan
+    # Force Style Professional
     forced_style = "financial concept art, stock market trading chart overlay, wall street environment, digital currency visualization, business professionalism, cinematic lighting, 8k realistic, bloomberg style"
-    
     final_prompt = f"{clean_prompt}, {forced_style}"
     
     headers = {
@@ -214,7 +211,7 @@ def generate_robust_image(prompt, filename):
             return f"/images/{filename}"
     except Exception: pass
 
-    # 2. HERCAI (Fallback)
+    # 2. HERCAI
     try:
         hercai_url = f"https://hercai.onrender.com/v3/text2image?prompt={requests.utils.quote(final_prompt)}"
         resp = requests.get(hercai_url, headers=headers, timeout=40)
@@ -228,58 +225,51 @@ def generate_robust_image(prompt, filename):
                 return f"/images/{filename}"
     except Exception: pass
 
-    # 3. FLICKR (Fallback - Keyword 'business'/'finance')
-    try:
-        flickr_url = f"https://loremflickr.com/1280/720/business,finance,wallstreet/all"
-        resp = requests.get(flickr_url, headers=headers, timeout=20, allow_redirects=True)
-        if resp.status_code == 200:
-            img = Image.open(BytesIO(resp.content)).convert("RGB")
-            img.save(output_path, "WEBP", quality=90)
-            print("      ✅ Image Saved (Source: Real Photo Fallback)")
-            return f"/images/{filename}"
-    except Exception: pass
-
-    # Default image
     return "/images/default-finance.webp"
 
 # ==========================================
-# 🧠 CONTENT ENGINE (FINANCE PRO + DISCLAIMER)
+# 🧠 CONTENT ENGINE (1500 WORDS + NO AI DISCLAIMER)
 # ==========================================
 
 def get_groq_article_json(title, summary, link, author_name):
     current_date = datetime.now().strftime("%Y-%m-%d")
     
+    # STRUKTUR ARTIKEL YANG MEMAKSA PANJANG
     structures = [
-        "MARKET_ANALYSIS (Analyze current trends, support/resistance levels, volume)",
-        "INVESTMENT_THESIS (Bull case vs Bear case, fundamental analysis)",
-        "ECONOMIC_IMPACT (How this news affects inflation, interest rates, or GDP)",
-        "GUIDE_APPROACH (Educational breakdown of the financial concepts involved)"
+        "COMPREHENSIVE_ANALYSIS (Cover: Current Event, Historical Context, Market Impact, Technical Analysis, Expert Opinions)",
+        "INVESTOR_DEEP_DIVE (Cover: Fundamentals, Valuation, Risk Factors, Competitive Landscape, Future Outlook)",
+        "MACRO_ECONOMIC_REPORT (Cover: Data Release, Fed Implications, Sector Rotations, Global Ripple Effects)"
     ]
     chosen_structure = random.choice(structures)
 
     system_prompt = f"""
-    You are {author_name}, a seasoned financial analyst for the US Market.
+    You are {author_name}, a seasoned senior financial analyst for the US Market (Wall Street).
     Current Date: {current_date}.
     
-    OBJECTIVE: Write a professional, data-driven financial news article.
-    TARGET AUDIENCE: US Investors, Traders, and Business Professionals.
+    OBJECTIVE: Write a **DEEP DIVE, LONG-FORM (1500+ Words)** financial analysis.
+    TARGET AUDIENCE: Institutional Investors, Sophisticated Traders, and Business Professionals.
     STRUCTURE STYLE: {chosen_structure}.
     
-    ✅ MANDATORY REQUIREMENTS (FOR ADSENSE/YMYL COMPLIANCE):
-    1. **DATA TABLE**: Include a Markdown Table (e.g., 'Key Financial Metrics', 'Stock Performance', 'Pros/Cons').
-    2. **FAQ SECTION**: Include 3 relevant FAQs at the end.
-    3. **VISUAL KEYWORD**: Describe a financial visualization (e.g., "Bullish stock chart on tablet").
-    4. **TONE**: Analytical, Objective, Professional. NO hype, NO financial advice.
-    5. **DISCLAIMER**: You MUST end the article with a clear financial disclaimer stating this is for informational purposes only.
+    🚫 NEGATIVE CONSTRAINTS (CRITICAL):
+    1. **NO DISCLAIMERS**: DO NOT write a disclaimer at the end. I will add the legal text programmatically.
+    2. **NO GENERIC HEADERS**: Do NOT use "Introduction", "Conclusion", "Summary". Start straight with the thesis.
+    3. **NO FLUFF**: Do not repeat the same point. Expand by adding historical data, competitor analysis, or technical levels.
+    
+    ✅ MANDATORY REQUIREMENTS:
+    1. **LENGTH**: The article MUST be comprehensive (aim for 1200-1500 words). Use multiple sub-sections.
+    2. **DATA TABLE**: You MUST include a detailed Markdown Table (e.g., Financial Metrics, Peer Comparison).
+    3. **HIERARCHY**: Use H2 (##) for major sections, H3 (###) for deeper analysis, and H4 (####) for specific data points.
+    4. **FAQ**: Add a "Frequently Asked Questions" section at the very end with 3 complex questions.
+    5. **VISUAL KEYWORD**: Describe a specific financial scene for the image generator.
     
     OUTPUT FORMAT (JSON):
     {{
-        "title": "Professional Headline (e.g., 'Why Tech Stocks Are Rallying...')",
-        "description": "Meta description (150 chars)",
+        "title": "Professional, Click-Worthy Headline",
+        "description": "SEO Meta description (150 chars)",
         "category": "One of: {', '.join(VALID_CATEGORIES)}",
-        "main_keyword": "Visual prompt description...",
-        "tags": ["tag1", "tag2"],
-        "content_body": "Full markdown content including Table, FAQ, and Disclaimer..."
+        "main_keyword": "Visual prompt...",
+        "tags": ["tag1", "tag2", "tag3", "tag4"],
+        "content_body": "The full long-form markdown content..."
     }}
     """
     
@@ -289,21 +279,21 @@ def get_groq_article_json(title, summary, link, author_name):
     - Summary: {summary}
     - Link: {link}
     
-    Write now. Focus on the US Market context.
+    Write the 1500-word analysis now.
     """
     
     for api_key in GROQ_API_KEYS:
         client = Groq(api_key=api_key)
         try:
-            print(f"      🤖 AI Writing ({chosen_structure.split()[0]})...")
+            print(f"      🤖 AI Writing ({chosen_structure.split()[0]} - Long Form)...")
             completion = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.5, 
-                max_tokens=6500,
+                temperature=0.6, # Sedikit kreatif agar tulisan panjang tidak repetitif
+                max_tokens=7500, # Naikkan token limit agar cukup untuk 1500 kata
                 response_format={"type": "json_object"}
             )
             return completion.choices[0].message.content
@@ -321,7 +311,7 @@ def main():
     os.makedirs(IMAGE_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    print("🔥 ENGINE STARTED: WRITRACK FINANCE EDITION (US MARKET)")
+    print("🔥 ENGINE STARTED: WRITRACK PRO (1500 WORDS + CLEAN DISCLAIMER)")
 
     for source_name, rss_url in RSS_SOURCES.items():
         print(f"\n📡 Reading: {source_name}")
@@ -342,16 +332,11 @@ def main():
             if os.path.exists(f"{CONTENT_DIR}/{filename}"): 
                 continue
             
-            # 🛡️ SAFETY CHECK: Handle Missing Summary in RSS
-            # Yahoo Finance seringkali tidak punya summary. Kita handle di sini.
+            # 🛡️ Anti-Crash: Handle Missing Summary
             entry_summary = ""
-            if hasattr(entry, 'summary'):
-                entry_summary = entry.summary
-            elif hasattr(entry, 'description'):
-                entry_summary = entry.description
-            else:
-                # Jika kosong sama sekali, pakai judul sebagai summary
-                entry_summary = clean_title 
+            if hasattr(entry, 'summary'): entry_summary = entry.summary
+            elif hasattr(entry, 'description'): entry_summary = entry.description
+            else: entry_summary = clean_title 
 
             print(f"   ⚡ Processing: {clean_title[:40]}...")
             
@@ -365,24 +350,25 @@ def main():
                 print("      ❌ JSON Parse Error")
                 continue
 
-            # 1. Generate Image (Finance Style)
+            # 1. Generate Image
             image_prompt = data.get('main_keyword', clean_title)
             final_img_path = generate_robust_image(image_prompt, f"{slug}.webp")
             
-            # 2. Clean Content
+            # 2. Clean Content (Hapus Disclaimer buatan AI)
             clean_body = clean_ai_content(data['content_body'])
             
-            # 3. Inject Contextual Links (Siloing)
+            # 3. Inject Links (Silo)
             final_body_with_links = inject_links_into_body(clean_body, data['title'])
             
             # 4. Fallback Category
             if data.get('category') not in VALID_CATEGORIES:
                 data['category'] = "Stock Market"
 
-            # 5. HARDCODED DISCLAIMER INJECTION (Safety Net for AdSense)
+            # 5. HARDCODED DISCLAIMER (The ONLY one that appears)
             footer_disclaimer = """
 ---
-**Disclaimer:** *The content provided on Writrack.web.id is for informational and educational purposes only and should not be construed as professional financial advice, investment recommendation, or a solicitation to buy or sell any securities. Trading stocks, cryptocurrencies, and other financial assets involves risk. Always consult with a licensed financial advisor before making any investment decisions.*
+### **Disclaimer**
+*The content provided on **WriTrack.web.id** is for **informational and educational purposes only**. It should not be construed as professional financial advice, investment recommendation, or a solicitation to buy or sell any securities. Trading stocks, cryptocurrencies, and other financial assets involves high risk. **Always consult with a licensed financial advisor before making any investment decisions.** The authors may hold positions in the securities mentioned.*
 """
             
             md_content = f"""---
@@ -419,8 +405,9 @@ weight: {random.randint(1, 10)}
             print(f"      ✅ Published: {slug}")
             processed_count += 1
             
-            print("      💤 Sleeping for 120s (Natural Drip Feed)...")
-            time.sleep(120)
+            # Delay natural
+            print("      💤 Sleeping for 60s (Deep Dive Processing)...")
+            time.sleep(60)
 
 if __name__ == "__main__":
     main()
