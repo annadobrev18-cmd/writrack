@@ -1,25 +1,25 @@
 baseURL: "https://writrack.web.id/"
 languageCode: "en-us"
 title: "WriTrack | US Market Intelligence"
-canonifyURLs: true
 
-# SEO Friendly Permalinks (Clean URLs)
+# 🔥 FIX IMAGE PATHS
+canonifyURLs: false
+relativeURLs: false
+uglyURLs: false
+
 permalinks:
   articles: "/:slug/"
 
-# Allow HTML in Markdown (Vital for Tables & Embeds)
 markup:
   goldmark:
     renderer:
       unsafe: true
 
-# Sitemap Configuration (Google Priority)
 sitemap:
   changefreq: "hourly"
   filename: "sitemap.xml"
   priority: 0.8
 
-# Output Formats
 outputs:
   home:
     - HTML
@@ -39,7 +39,6 @@ outputs:
     - HTML
     - RSS
 
-# RSS Configuration (Increase limit for News Site)
 services:
   rss:
     limit: 100
@@ -48,25 +47,18 @@ taxonomies:
   category: "categories"
   tag: "tags"
 
-# 🔥 CORE BRANDING & SEO PARAMS
 params:
-  # Meta Description (Crucial for Click Through Rate)
   description: "WriTrack provides institutional-grade analysis of the US Stock Market, Macroeconomic trends, Crypto assets, and Personal Finance strategies for the modern investor."
-  
-  # Meta Keywords (High CPC Finance Keywords)
   keywords: "US Stock Market, Finance News, Investing, Crypto, S&P 500, Nasdaq, Economy, Personal Finance, Wealth Management"
-
-  # Default Image (Must be Finance related, not Football)
-  defaultImage: "/images/default-finance.webp"
   
-  # Brand Identity
+  # 🔥 PATH TANPA SLASH DEPAN
+  defaultImage: "images/default-finance.webp"
+  
   brand: "WriTrack"
   tagline: "Data Driven Investing"
 
-  # E-E-A-T Identity
   author:
     name: "WriTrack Editorial Team"
     email: "editor@writrack.web.id"
   
-  # Footer Copyright
   copyright: "© 2026 WriTrack.web.id. All Rights Reserved."
