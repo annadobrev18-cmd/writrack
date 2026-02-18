@@ -191,7 +191,6 @@ def generate_robust_image(prompt, filename):
     clean_prompt = prompt.lower().replace('"', '').replace("'", "")
     
     # 2. Force Style untuk Keuangan
-    # Kita tidak mau gambar kartun. Kita mau gaya profesional/berita.
     forced_style = "financial concept art, stock market trading chart overlay, wall street environment, digital currency visualization, business professionalism, cinematic lighting, 8k realistic, bloomberg style"
     
     final_prompt = f"{clean_prompt}, {forced_style}"
@@ -203,7 +202,7 @@ def generate_robust_image(prompt, filename):
 
     print(f"      🎨 Generating Image: {clean_prompt[:30]}...")
 
-    # 1. POLLINATIONS (Flux Model is best for abstract concepts)
+    # 1. POLLINATIONS
     try:
         seed = random.randint(1, 99999)
         poly_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(final_prompt)}?width=1280&height=720&model=flux&seed={seed}&nologo=true"
@@ -240,7 +239,7 @@ def generate_robust_image(prompt, filename):
             return f"/images/{filename}"
     except Exception: pass
 
-    # Default image jika semua gagal (pastikan Anda punya file ini atau ganti nama)
+    # Default image
     return "/images/default-finance.webp"
 
 # ==========================================
@@ -303,7 +302,7 @@ def get_groq_article_json(title, summary, link, author_name):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.5, # Lebih rendah agar lebih akurat/konservatif
+                temperature=0.5, 
                 max_tokens=6500,
                 response_format={"type": "json_object"}
             )
@@ -343,10 +342,21 @@ def main():
             if os.path.exists(f"{CONTENT_DIR}/{filename}"): 
                 continue
             
+            # 🛡️ SAFETY CHECK: Handle Missing Summary in RSS
+            # Yahoo Finance seringkali tidak punya summary. Kita handle di sini.
+            entry_summary = ""
+            if hasattr(entry, 'summary'):
+                entry_summary = entry.summary
+            elif hasattr(entry, 'description'):
+                entry_summary = entry.description
+            else:
+                # Jika kosong sama sekali, pakai judul sebagai summary
+                entry_summary = clean_title 
+
             print(f"   ⚡ Processing: {clean_title[:40]}...")
             
             author = random.choice(AUTHOR_PROFILES)
-            raw_json = get_groq_article_json(clean_title, entry.summary, entry.link, author)
+            raw_json = get_groq_article_json(clean_title, entry_summary, entry.link, author)
             
             if not raw_json: continue
             try:
@@ -370,7 +380,6 @@ def main():
                 data['category'] = "Stock Market"
 
             # 5. HARDCODED DISCLAIMER INJECTION (Safety Net for AdSense)
-            # Walaupun AI diminta nulis, kita tempel lagi di bawah biar 100% aman.
             footer_disclaimer = """
 ---
 **Disclaimer:** *The content provided on Writrack.web.id is for informational and educational purposes only and should not be construed as professional financial advice, investment recommendation, or a solicitation to buy or sell any securities. Trading stocks, cryptocurrencies, and other financial assets involves risk. Always consult with a licensed financial advisor before making any investment decisions.*
