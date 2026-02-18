@@ -99,11 +99,9 @@ def clean_ai_content(text):
     text = re.sub(r'\n```$', '', text)
     text = text.replace("```", "")
     
-    # HAPUS HEADER BASI & DISCLAIMER BUATAN AI
-    # Kita hapus jika AI bandel menulis Disclaimer sendiri di dalam body
+    # Hapus Header Basi & Disclaimer AI
     text = re.sub(r'^##\s*(Introduction|Conclusion|Summary|The Verdict|Final Thoughts|Disclaimer)\s*\n', '', text, flags=re.MULTILINE|re.IGNORECASE)
     
-    # Konversi HTML basic
     text = text.replace("<h1>", "# ").replace("</h1>", "\n")
     text = text.replace("<h2>", "## ").replace("</h2>", "\n")
     text = text.replace("<h3>", "### ").replace("</h3>", "\n")
@@ -147,7 +145,6 @@ def inject_links_into_body(content_body, current_title):
     link_box += "\n"
 
     paragraphs = content_body.split('\n\n')
-    # Inject di paragraf ke-3 agar user membaca dulu
     if len(paragraphs) < 5: return content_body + link_box
     insert_pos = 3
     paragraphs.insert(insert_pos, link_box)
@@ -182,7 +179,7 @@ def submit_to_google(url):
     except Exception as e: print(f"      ⚠️ Google Indexing Error: {e}")
 
 # ==========================================
-# 🎨 FINANCE IMAGE GENERATOR
+# 🎨 FINANCE IMAGE GENERATOR (FIXED PATH)
 # ==========================================
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
@@ -208,7 +205,8 @@ def generate_robust_image(prompt, filename):
             img = Image.open(BytesIO(resp.content)).convert("RGB")
             img.save(output_path, "WEBP", quality=90)
             print("      ✅ Image Saved (Source: Pollinations Flux)")
-            return f"/images/{filename}"
+            # 🔥 FIX: HAPUS SLASH DEPAN
+            return f"images/{filename}"
     except Exception: pass
 
     # 2. HERCAI
@@ -222,10 +220,12 @@ def generate_robust_image(prompt, filename):
                 img = Image.open(BytesIO(img_data)).convert("RGB")
                 img.save(output_path, "WEBP", quality=90)
                 print("      ✅ Image Saved (Source: Hercai AI)")
-                return f"/images/{filename}"
+                # 🔥 FIX: HAPUS SLASH DEPAN
+                return f"images/{filename}"
     except Exception: pass
 
-    return "/images/default-finance.webp"
+    # 🔥 FIX: HAPUS SLASH DEPAN DI DEFAULT
+    return "images/default-finance.webp"
 
 # ==========================================
 # 🧠 CONTENT ENGINE (1500 WORDS + NO AI DISCLAIMER)
@@ -234,7 +234,6 @@ def generate_robust_image(prompt, filename):
 def get_groq_article_json(title, summary, link, author_name):
     current_date = datetime.now().strftime("%Y-%m-%d")
     
-    # STRUKTUR ARTIKEL YANG MEMAKSA PANJANG
     structures = [
         "COMPREHENSIVE_ANALYSIS (Cover: Current Event, Historical Context, Market Impact, Technical Analysis, Expert Opinions)",
         "INVESTOR_DEEP_DIVE (Cover: Fundamentals, Valuation, Risk Factors, Competitive Landscape, Future Outlook)",
@@ -292,8 +291,8 @@ def get_groq_article_json(title, summary, link, author_name):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.6, # Sedikit kreatif agar tulisan panjang tidak repetitif
-                max_tokens=7500, # Naikkan token limit agar cukup untuk 1500 kata
+                temperature=0.6,
+                max_tokens=7500,
                 response_format={"type": "json_object"}
             )
             return completion.choices[0].message.content
