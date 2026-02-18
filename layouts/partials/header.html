@@ -1,0 +1,95 @@
+<header class="bg-gray-900 border-b-4 border-emerald-600 sticky top-0 z-50">
+    
+    <!-- Top Bar (Financial Ticker Style) -->
+    <div class="bg-black text-gray-400 text-[10px] py-1 hidden md:block border-b border-gray-800">
+        <div class="container mx-auto px-4 flex justify-between">
+            <span class="uppercase tracking-widest font-bold text-emerald-500">MARKET OPEN // {{ now.Format "Mon, Jan 02, 2006" }}</span>
+            <span class="font-bold tracking-wider text-gray-300">writrack.web.id // US MARKET INSIGHTS</span>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <div class="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between relative bg-gray-900">
+        
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-3 group shrink-0" aria-label="Homepage">
+            <!-- Icon: Rising Bar Chart (Financial Growth) -->
+            <div class="w-10 h-8 rounded border-2 border-gray-600 flex items-end justify-center gap-1 pb-1 px-1 group-hover:border-emerald-500 transition bg-gray-800">
+                <div class="w-1.5 h-2 bg-gray-400 group-hover:bg-emerald-500 transition duration-300"></div>
+                <div class="w-1.5 h-3 bg-gray-300 group-hover:bg-emerald-400 transition duration-500"></div>
+                <div class="w-1.5 h-5 bg-white group-hover:bg-emerald-300 transition duration-700"></div>
+            </div>
+            <span class="font-display font-black text-xl tracking-tighter text-white uppercase">
+                Wri<span class="font-light text-emerald-500">TRACK</span>
+            </span>
+        </a>
+
+        <!-- Desktop Menu -->
+        <nav class="hidden lg:flex items-center gap-6">
+            <a href="/" class="text-sm font-bold text-gray-300 hover:text-white uppercase tracking-wide transition border-b-2 border-transparent hover:border-emerald-500 py-1">Home</a>
+
+            <!-- Dropdown: Markets -->
+            <div class="relative group py-6">
+                <button class="flex items-center gap-1 text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-wide cursor-pointer focus:outline-none">
+                    Markets <span class="text-[10px] text-emerald-500">▼</span>
+                </button>
+                <div class="absolute left-0 top-full w-56 bg-gray-900 border-t-2 border-emerald-500 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-1 group-hover:translate-y-0">
+                    <a href="/categories/stock-market" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 border-b border-gray-800">Stock Market</a>
+                    <a href="/categories/global-economy" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 border-b border-gray-800">Global Economy</a>
+                    <a href="/categories/real-estate-news" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800">Real Estate</a>
+                </div>
+            </div>
+
+            <!-- Dropdown: Wealth Management -->
+            <div class="relative group py-6">
+                <button class="flex items-center gap-1 text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-wide cursor-pointer focus:outline-none">
+                    Wealth <span class="text-[10px] text-emerald-500">▼</span>
+                </button>
+                <div class="absolute left-0 top-full w-56 bg-gray-900 border-t-2 border-emerald-500 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-1 group-hover:translate-y-0">
+                    <a href="/categories/personal-finance" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 border-b border-gray-800">Personal Finance</a>
+                    <a href="/categories/retirement-planning" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 border-b border-gray-800">Retirement Planning</a>
+                    <a href="/categories/etf-mutual-funds" class="block px-4 py-3 text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800">ETFs & Funds</a>
+                </div>
+            </div>
+
+            <a href="/categories/crypto-blockchain" class="text-sm font-bold text-gray-300 hover:text-white uppercase tracking-wide transition border-b-2 border-transparent hover:border-emerald-500 py-1">Crypto</a>
+        </nav>
+
+        <!-- Right Side -->
+        <div class="flex items-center gap-4">
+            <!-- Search Icon (Visual only) -->
+            <div class="hidden lg:block text-gray-400 hover:text-emerald-500 cursor-pointer transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+
+            <!-- Mobile Toggle -->
+            <button id="mobile-menu-btn" aria-label="Menu" class="lg:hidden text-white focus:outline-none hover:text-emerald-500 transition">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden lg:hidden bg-gray-900 border-t border-gray-800">
+        <nav class="flex flex-col p-4 space-y-2">
+            <a href="/" class="block px-4 py-2 text-sm font-bold text-white uppercase bg-gray-800 rounded">Market Overview</a>
+            
+            <div class="px-4 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-2">Wall Street</div>
+            <a href="/categories/stock-market" class="block px-6 py-2 text-sm text-gray-300 hover:text-white border-l-2 border-transparent hover:border-emerald-500">Stocks & Bonds</a>
+            <a href="/categories/global-economy" class="block px-6 py-2 text-sm text-gray-300 hover:text-white border-l-2 border-transparent hover:border-emerald-500">Global Economy</a>
+            
+            <div class="px-4 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-2">Investing</div>
+            <a href="/categories/crypto-blockchain" class="block px-6 py-2 text-sm text-gray-300 hover:text-white border-l-2 border-transparent hover:border-emerald-500">Crypto Assets</a>
+            <a href="/categories/etf-mutual-funds" class="block px-6 py-2 text-sm text-gray-300 hover:text-white border-l-2 border-transparent hover:border-emerald-500">ETFs & Funds</a>
+            
+            <div class="px-4 py-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-2">Planning</div>
+            <a href="/categories/personal-finance" class="block px-6 py-2 text-sm text-gray-300 hover:text-white border-l-2 border-transparent hover:border-emerald-500">Personal Finance</a>
+        </nav>
+    </div>
+
+    <script>
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</header>

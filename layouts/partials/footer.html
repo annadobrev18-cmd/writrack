@@ -1,0 +1,87 @@
+<footer class="bg-gray-900 text-white pt-16 pb-8 border-t-[6px] border-emerald-600">
+    <div class="container mx-auto px-4">
+        
+        <!-- Top Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-8 mb-8">
+            <div class="mb-6 md:mb-0">
+                <a href="/" class="flex items-center gap-3 group" aria-label="writrack.web.id Homepage">
+                    <!-- Icon: Rising Bar Chart -->
+                    <div class="w-10 h-8 rounded border-2 border-gray-600 flex items-end justify-center gap-1 pb-1 px-1 group-hover:border-emerald-500 transition bg-gray-800">
+                        <div class="w-1.5 h-2 bg-gray-400 group-hover:bg-emerald-500 transition duration-300"></div>
+                        <div class="w-1.5 h-3 bg-gray-300 group-hover:bg-emerald-400 transition duration-500"></div>
+                        <div class="w-1.5 h-5 bg-white group-hover:bg-emerald-300 transition duration-700"></div>
+                    </div>
+                    <span class="font-display font-black text-2xl tracking-tighter text-white uppercase">
+                        Wri<span class="font-light text-emerald-500">TRACK</span>
+                    </span>
+                </a>
+                <p class="text-gray-500 text-xs mt-3 uppercase tracking-widest font-bold">
+                    Your Daily Source for US Market Intelligence & Analysis
+                </p>
+            </div>
+            
+            <div class="flex gap-4">
+                <!-- X / Twitter Icon -->
+                <a href="#" class="w-10 h-10 rounded bg-gray-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition duration-300 text-gray-400 border border-gray-700 hover:border-emerald-500">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Links Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-sm mb-12">
+            <div>
+                <h4 class="font-bold text-white uppercase mb-4 tracking-wider border-l-4 border-emerald-600 pl-3">WriTrack</h4>
+                <ul class="space-y-3 text-gray-400">
+                    <li><a href="/about" class="hover:text-white hover:underline transition">About Us</a></li>
+                    <li><a href="/editorial-policy" class="hover:text-white hover:underline transition">Editorial Standards</a></li>
+                    <li><a href="/contact" class="hover:text-white hover:underline transition">Advertising</a></li>
+                    <li><a href="/contact" class="hover:text-white hover:underline transition">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white uppercase mb-4 tracking-wider border-l-4 border-emerald-600 pl-3">Market Sectors</h4>
+                <ul class="space-y-3 text-gray-400">
+                    <li><a href="/categories/stock-market" class="hover:text-white hover:underline transition">Stock Market</a></li>
+                    <li><a href="/categories/real-estate-news" class="hover:text-white hover:underline transition">Real Estate</a></li>
+                    <li><a href="/categories/crypto-blockchain" class="hover:text-white hover:underline transition">Crypto Assets</a></li>
+                    <li><a href="/categories/global-economy" class="hover:text-white hover:underline transition">Global Economy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white uppercase mb-4 tracking-wider border-l-4 border-emerald-600 pl-3">Legal</h4>
+                <ul class="space-y-3 text-gray-400">
+                    <li><a href="/terms-of-service" class="hover:text-white hover:underline transition">Terms of Service</a></li>
+                    <li><a href="/privacy-policy" class="hover:text-white hover:underline transition">Privacy Policy</a></li>
+                    <li><a href="/disclaimer" class="hover:text-white hover:underline transition">Financial Disclaimer</a></li>
+                    <li><a href="/privacy-policy" class="hover:text-white hover:underline transition">Cookie Policy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-white uppercase mb-4 tracking-wider border-l-4 border-emerald-600 pl-3">Market Briefing</h4>
+                <p class="text-gray-400 text-xs mb-4 leading-relaxed">
+                    Join 25,000+ investors. Get pre-market movers & economic alerts.
+                </p>
+                <form action="#" class="flex flex-col gap-2">
+                    <input type="email" placeholder="Your email address" class="w-full bg-gray-800 text-white placeholder-gray-500 text-xs px-4 py-3 rounded-sm focus:outline-none border border-gray-700 focus:border-emerald-600 transition">
+                    <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-sm text-xs font-black uppercase hover:bg-emerald-500 transition w-full shadow-lg tracking-wider">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-500 uppercase tracking-wide">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <p>&copy; {{ now.Format "2006" }} writrack.web.id. All rights reserved.</p>
+                <p class="hidden md:block text-gray-700">|</p>
+                <p>Data Driven Investing</p>
+            </div>
+            <div class="mt-4 md:mt-0 opacity-50 hover:opacity-100 transition">
+                <!-- Histats / Analytics Placeholder -->
+                <div id="histats_counter"></div>
+            </div>
+        </div>
+    </div>
+</footer>

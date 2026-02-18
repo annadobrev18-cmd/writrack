@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /tags/
+Disallow: /categories/
+# Biarkan Google crawl artikel, tapi jangan buang budget di halaman tags/categories yang membosankan
+
+Sitemap: https://writrack.web.id/sitemap.xml
