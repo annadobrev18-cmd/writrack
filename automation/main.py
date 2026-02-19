@@ -111,6 +111,43 @@ def clean_ai_content(text):
     return text.strip()
 
 # ==========================================
+# 📑 TABLE OF CONTENTS GENERATOR (NEW!)
+# ==========================================
+def insert_table_of_contents(content):
+    """
+    Memindai H2 dan H3, membuat daftar link, dan menyuntikkannya sebelum H2 pertama.
+    """
+    # Regex untuk menangkap H2 (##) dan H3 (###)
+    headers = re.findall(r'^(##|###)\s+(.+)$', content, re.MULTILINE)
+    
+    if not headers:
+        return content
+
+    toc_lines = ["**Table of Contents**"]
+    
+    for level, title in headers:
+        # Buat anchor slug (Hugo biasanya men-slugify judul header)
+        anchor = slugify(title)
+        
+        if level == "##":
+            toc_lines.append(f"- [{title}](#{anchor})")
+        elif level == "###":
+            toc_lines.append(f"  - [{title}](#{anchor})")
+            
+    toc_block = "\n" + "\n".join(toc_lines) + "\n\n---\n\n"
+    
+    # Suntikkan TOC sebelum header H2 pertama yang ditemukan
+    # Kita split konten berdasarkan '## ' pertama
+    parts = content.split('\n## ', 1)
+    
+    if len(parts) == 2:
+        # parts[0] adalah intro, parts[1] adalah sisa artikel
+        return parts[0] + toc_block + "## " + parts[1]
+    else:
+        # Jika struktur aneh, taruh di paling atas
+        return toc_block + content
+
+# ==========================================
 # 🧠 SMART SILO LINKING
 # ==========================================
 def get_contextual_links(current_title):
@@ -145,8 +182,9 @@ def inject_links_into_body(content_body, current_title):
     link_box += "\n"
 
     paragraphs = content_body.split('\n\n')
-    if len(paragraphs) < 5: return content_body + link_box
-    insert_pos = 3
+    # Inject agak ke bawah karena di atas sudah ada TOC
+    if len(paragraphs) < 6: return content_body + link_box
+    insert_pos = 4
     paragraphs.insert(insert_pos, link_box)
     return "\n\n".join(paragraphs)
 
@@ -184,8 +222,6 @@ def submit_to_google(url):
 def generate_robust_image(prompt, filename):
     output_path = f"{IMAGE_DIR}/{filename}"
     
-    # 1. Bersihkan Prompt & Paksa Style Realistis
-    # Kita hapus karakter aneh dan tambahkan keywords agar hasilnya seperti foto Bloomberg/Reuters
     clean_prompt = prompt.lower().replace('"', '').replace("'", "")
     
     forced_style = (
@@ -203,51 +239,34 @@ def generate_robust_image(prompt, filename):
 
     print(f"      🎨 Generating Image: {clean_prompt[:30]}...")
 
-    # --- STRATEGY 1: HERCAI (AI Generation - Free Alternative) ---
-    # Menggantikan Pollinations dengan Hercai. 
-    # Hercai menggunakan berbagai model (v3/lexica) yang gratis.
+    # STRATEGY 1: HERCAI (AI Generation)
     try:
-        # Encode prompt agar aman di URL
         encoded_prompt = requests.utils.quote(final_prompt)
-        # Menggunakan endpoint v3 text2image
         hercai_url = f"https://hercai.onrender.com/v3/text2image?prompt={encoded_prompt}"
-        
-        # Timeout diset 60 detik karena free tier server kadang butuh waktu bangun (cold start)
         resp = requests.get(hercai_url, headers=headers, timeout=60)
         
         if resp.status_code == 200:
             data = resp.json()
             if "url" in data and data["url"]:
                 img_url = data["url"]
-                
-                # Download gambar hasil generate
                 img_resp = requests.get(img_url, headers=headers, timeout=30)
                 if img_resp.status_code == 200:
                     img = Image.open(BytesIO(img_resp.content)).convert("RGB")
-                    
-                    # Resize standar HD (1280x720) agar loading web cepat & konsisten
                     img = img.resize((1280, 720), Image.LANCZOS)
-                    
                     img.save(output_path, "WEBP", quality=90)
                     print("      ✅ Image Saved (Source: Hercai AI)")
                     return f"/images/{filename}"
     except Exception as e:
-        print(f"      ⚠️ Hercai AI Failed, switching to Stock Photo... ({str(e)[:50]})")
+        print(f"      ⚠️ Hercai AI Failed: {str(e)[:50]}")
 
-    # --- STRATEGY 2: LOREMFLICKR (Real Stock Photos - Fallback) ---
-    # Jika AI gagal/down, kita ambil FOTO ASLI dari LoremFlickr.
-    # Ini sangat cocok untuk niche Finance karena hasilnya pasti relevan & profesional.
+    # STRATEGY 2: LOREMFLICKR (Real Stock Photos)
     try:
-        # Rotasi keyword agar gambarnya tidak itu-itu saja
         fallback_keywords = ["finance", "stockmarket", "wallstreet", "bitcoin", "business", "office", "money"]
         chosen_keyword = random.choice(fallback_keywords)
-        
-        # URL ini akan mereturn gambar random sesuai keyword berukuran 1280x720
         flickr_url = f"https://loremflickr.com/1280/720/{chosen_keyword}"
         
         print(f"      🔄 Fetching Real Stock Photo ({chosen_keyword})...")
         resp = requests.get(flickr_url, headers=headers, timeout=30, allow_redirects=True)
-        
         if resp.status_code == 200:
             img = Image.open(BytesIO(resp.content)).convert("RGB")
             img.save(output_path, "WEBP", quality=90)
@@ -256,8 +275,7 @@ def generate_robust_image(prompt, filename):
     except Exception as e:
         print(f"      ⚠️ Stock Photo Failed: {e}")
 
-    # --- STRATEGY 3: DEFAULT LOCAL IMAGE (Last Resort) ---
-    # Pastikan Anda punya gambar ini di folder static/images/
+    # STRATEGY 3: DEFAULT
     print("      ⚠️ Using Default Static Image")
     return "/images/default-finance.webp"
 
@@ -344,7 +362,7 @@ def main():
     os.makedirs(IMAGE_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    print("🔥 ENGINE STARTED: WRITRACK PRO (1500 WORDS + CLEAN DISCLAIMER)")
+    print("🔥 ENGINE STARTED: WRITRACK PRO (TOC + SILO + IMAGE FIX)")
 
     for source_name, rss_url in RSS_SOURCES.items():
         print(f"\n📡 Reading: {source_name}")
@@ -383,21 +401,24 @@ def main():
                 print("      ❌ JSON Parse Error")
                 continue
 
-            # 1. Generate Image (Dengan Metode Pollinations Flux)
+            # 1. Generate Image (Robust Method)
             image_prompt = data.get('main_keyword', clean_title)
             final_img_path = generate_robust_image(image_prompt, f"{slug}.webp")
             
-            # 2. Clean Content (Hapus Disclaimer buatan AI)
+            # 2. Clean Content
             clean_body = clean_ai_content(data['content_body'])
             
-            # 3. Inject Links (Silo)
-            final_body_with_links = inject_links_into_body(clean_body, data['title'])
+            # 3. 🔥 INSERT TABLE OF CONTENTS (NEW)
+            body_with_toc = insert_table_of_contents(clean_body)
             
-            # 4. Fallback Category
+            # 4. Inject Links (Silo)
+            final_body_with_links = inject_links_into_body(body_with_toc, data['title'])
+            
+            # 5. Fallback Category
             if data.get('category') not in VALID_CATEGORIES:
                 data['category'] = "Stock Market"
 
-            # 5. HARDCODED DISCLAIMER (Satu-satunya yang muncul)
+            # 6. Disclaimer
             footer_disclaimer = """
 ---
 ### **Disclaimer**
@@ -428,7 +449,7 @@ weight: {random.randint(1, 10)}
             with open(f"{CONTENT_DIR}/{filename}", "w", encoding="utf-8") as f:
                 f.write(md_content)
             
-            # 6. Save & Index
+            # 7. Save & Index
             save_link_to_memory(data['title'], slug)
             
             full_url = f"{WEBSITE_URL}/articles/{slug}/"
