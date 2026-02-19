@@ -1,11 +1,11 @@
 {{ define "main" }}
 
 <!-- ====================================================================== -->
-<!-- 1. REAL-TIME TICKER TAPE (FULL WIDTH) -->
+<!-- 1. REAL-TIME TICKER TAPE (DIPERPANJANG AGAR GERAK) -->
 <!-- ====================================================================== -->
+<!-- Widget ini ditaruh di luar container agar FULL WIDTH (mentok kiri-kanan) -->
 <div class="tradingview-widget-container">
   <div class="tradingview-widget-container__widget"></div>
-  <!-- Kita tambahkan spasi dan baris baru yang rapi agar parser tidak bingung -->
   <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
   {
   "symbols": [
@@ -15,7 +15,7 @@
     },
     {
       "proName": "FOREXCOM:NSXUSD",
-      "title": "US 100"
+      "title": "Nasdaq 100"
     },
     {
       "proName": "FX_IDC:USDIDR",
@@ -36,6 +36,34 @@
     {
       "description": "Oil",
       "proName": "TVC:USOIL"
+    },
+    {
+      "description": "Nvidia",
+      "proName": "NASDAQ:NVDA"
+    },
+    {
+      "description": "Tesla",
+      "proName": "NASDAQ:TSLA"
+    },
+    {
+      "description": "Apple",
+      "proName": "NASDAQ:AAPL"
+    },
+    {
+      "description": "Microsoft",
+      "proName": "NASDAQ:MSFT"
+    },
+    {
+      "description": "Google",
+      "proName": "NASDAQ:GOOGL"
+    },
+    {
+      "description": "Meta",
+      "proName": "NASDAQ:META"
+    },
+    {
+      "description": "Amazon",
+      "proName": "NASDAQ:AMZN"
     }
   ],
   "showSymbolLogo": true,
@@ -48,80 +76,170 @@
 </div>
 
 <!-- ====================================================================== -->
-<!-- 2. MAIN CONTENT -->
+<!-- 2. MAIN CONTENT CONTAINER -->
 <!-- ====================================================================== -->
 <div class="container mx-auto px-4 py-8 max-w-7xl font-sans">
-    
+
+    <!-- DATA FETCHING -->
     {{ $articles := where .Site.RegularPages "Section" "articles" }}
     {{ $posts := where .Site.RegularPages "Section" "posts" }}
     {{ $news := union $articles $posts }}
     {{ $news := $news.ByDate.Reverse }}
 
-    <!-- HERO SECTION & SISA KONTEN SAMA SEPERTI SEBELUMNYA -->
+    <!-- ERROR HANDLING -->
     {{ if eq (len $news) 0 }}
-    <div class="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 border border-gray-200 p-10 text-center">
+    <div class="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-none border border-gray-200 p-10 text-center">
         <h3 class="text-2xl font-serif font-bold text-gray-900">No Market Data Available</h3>
         <p class="text-gray-500 mt-2 font-mono text-sm">Waiting for data stream...</p>
     </div>
     {{ else }}
 
-    <!-- HERO SECTION -->
+    <!-- ====================================================================== -->
+    <!-- 3. HERO SECTION (BLOOMBERG STYLE) -->
+    <!-- ====================================================================== -->
     <section class="mb-12 border-b border-gray-200 pb-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT: MAIN STORY -->
             {{ range first 1 $news }}
             <div class="lg:col-span-8 group relative">
                 <a href="{{ .Permalink }}" class="block">
                     <div class="relative h-[400px] lg:h-[500px] w-full overflow-hidden mb-4">
                         {{ if .Params.featured_image }}
-                        <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter brightness-90 group-hover:brightness-100">
+                        <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" 
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter brightness-90 group-hover:brightness-100">
                         {{ else }}
                         <div class="absolute inset-0 bg-gray-800"></div>
                         {{ end }}
                         <div class="absolute bottom-0 left-0 bg-gradient-to-t from-black via-transparent to-transparent w-full h-1/2 opacity-60"></div>
                     </div>
+                    
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="text-red-700 font-bold uppercase tracking-widest text-xs">Market Moving</span>
-                        <span class="text-gray-400 text-xs font-mono uppercase">{{ .Date.Format "15:04 PM EST" }}</span>
+                        <span class="text-red-700 font-bold uppercase tracking-widest text-xs">
+                            Market Moving
+                        </span>
+                        <span class="text-gray-400 text-xs font-mono uppercase">
+                            {{ .Date.Format "15:04 PM EST" }}
+                        </span>
                     </div>
-                    <h1 class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-3 group-hover:text-red-700 transition-colors">{{ .Title }}</h1>
-                    <p class="text-gray-600 text-lg leading-relaxed max-w-3xl border-l-4 border-red-600 pl-4">{{ .Description | default .Summary | truncate 160 }}</p>
+
+                    <h1 class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-3 group-hover:text-red-700 transition-colors">
+                        {{ .Title }}
+                    </h1>
+                    <!-- Gunakan .Description dulu agar Table of Content tidak bocor ke sini -->
+                    <p class="text-gray-600 text-lg leading-relaxed max-w-3xl border-l-4 border-red-600 pl-4">
+                        {{ .Description | default .Summary | truncate 160 }}
+                    </p>
                 </a>
             </div>
             {{ end }}
 
+            <!-- RIGHT: TOP STORIES LIST -->
             <div class="lg:col-span-4 flex flex-col justify-between h-full border-l border-gray-200 pl-0 lg:pl-8">
                 <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-200 pb-2">Top Headlines</h4>
+                
                 <div class="flex flex-col gap-6">
                     {{ range first 4 (after 1 $news) }}
                     <a href="{{ .Permalink }}" class="group block">
-                        <span class="text-[10px] font-bold text-red-600 uppercase mb-1 block">{{ if .Params.categories }}{{ index .Params.categories 0 }}{{ else }}Markets{{ end }}</span>
-                        <h3 class="text-lg font-bold font-serif text-gray-900 leading-snug group-hover:underline decoration-red-600 decoration-2 underline-offset-4">{{ .Title }}</h3>
-                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ .Summary | truncate 80 }}</p>
+                        <span class="text-[10px] font-bold text-red-600 uppercase mb-1 block">
+                             {{ if .Params.categories }}{{ index .Params.categories 0 }}{{ else }}Markets{{ end }}
+                        </span>
+                        <h3 class="text-lg font-bold font-serif text-gray-900 leading-snug group-hover:underline decoration-red-600 decoration-2 underline-offset-4">
+                            {{ .Title }}
+                        </h3>
+                        <!-- Gunakan Description untuk menghindari TOC masuk ke preview -->
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {{ .Description | default .Summary | truncate 80 }}
+                        </p>
                     </a>
                     {{ end }}
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-50 border border-gray-200 text-center">
+                    <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Market Data</span>
+                    <span class="block text-xl font-mono font-bold text-gray-900">S&P 500 <span class="text-green-600">▲ 1.2%</span></span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- LIST BERITA BAWAH (LATEST WIRE) -->
+    <!-- ====================================================================== -->
+    <!-- 4. "DEEP DIVE" SECTION (DARK MODE) -->
+    <!-- ====================================================================== -->
+    {{ if gt (len $news) 5 }}
+    <section class="mb-16 bg-[#0f172a] -mx-4 px-4 py-16 text-white"> 
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-10 border-b border-gray-700 pb-4">
+                <h2 class="text-2xl font-serif font-bold text-white flex items-center gap-3">
+                    <span class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                    Analyst Insights & Deep Dives
+                </h2>
+                <a href="/categories/analysis" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">View All</a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {{ range first 3 (after 5 $news) }}
+                <article class="group">
+                    <a href="{{ .Permalink }}" class="block overflow-hidden mb-4 relative aspect-video border border-gray-700">
+                        {{ if .Params.featured_image }}
+                        <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" 
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100">
+                        {{ end }}
+                    </a>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase">
+                            Premium
+                        </span>
+                        <span class="text-gray-400 text-xs">{{ .ReadingTime }} min read</span>
+                    </div>
+                    <h3 class="text-xl font-bold leading-tight group-hover:text-red-400 transition-colors">
+                        {{ .Title }}
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-2 line-clamp-2 font-serif italic">
+                        "{{ .Description | default .Summary | truncate 100 }}"
+                    </p>
+                </article>
+                {{ end }}
+            </div>
+        </div>
+    </section>
+    {{ end }}
+
+    <!-- ====================================================================== -->
+    <!-- 5. LATEST WIRE (GRID) -->
+    <!-- ====================================================================== -->
     <section class="mb-12">
         <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-serif font-black text-gray-900 border-b-4 border-black pb-1 inline-block">Latest Wire</h2>
+            <h2 class="text-3xl font-serif font-black text-gray-900 border-b-4 border-black pb-1 inline-block">
+                Latest Wire
+            </h2>
         </div>
-        {{ $paginator := .Paginate (after 5 $news) }}
+
+        {{ $paginator := .Paginate (after 8 $news) }}
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
             {{ range $paginator.Pages }}
             <article class="flex flex-col h-full group border-b border-gray-100 pb-6 md:border-none">
                 <a href="{{ .Permalink }}" class="block mb-3 aspect-[3/2] overflow-hidden bg-gray-100 relative">
                     {{ if .Params.featured_image }}
-                    <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0">
+                    <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" 
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 filter grayscale-[30%] group-hover:grayscale-0" loading="lazy">
                     {{ else }}
                     <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs uppercase">No Image</div>
                     {{ end }}
                 </a>
+                
                 <div class="flex flex-col flex-grow">
-                    <h3 class="font-bold text-base leading-snug text-gray-900 group-hover:text-red-700 transition-colors mb-2"><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-black text-red-700 uppercase tracking-wider">
+                            {{ if .Params.categories }}{{ index .Params.categories 0 }}{{ else }}NEWS{{ end }}
+                        </span>
+                    </div>
+                    
+                    <h3 class="font-bold text-base leading-snug text-gray-900 group-hover:text-red-700 transition-colors mb-2">
+                        <a href="{{ .Permalink }}">{{ .Title }}</a>
+                    </h3>
+                    
                     <div class="mt-auto pt-2 flex items-center justify-between border-t border-gray-100">
                          <span class="text-[10px] font-bold text-gray-500 uppercase">{{ .Params.author | default "Staff Writer" }}</span>
                          <span class="text-[10px] text-gray-400 font-mono">{{ .Date.Format "Jan 02" }}</span>
@@ -130,7 +248,27 @@
             </article>
             {{ end }}
         </div>
+
+        <!-- PAGINATION -->
+        {{ if gt $paginator.TotalPages 1 }}
+        <div class="mt-16 flex justify-center border-t border-gray-200 pt-8">
+            <div class="flex gap-1">
+                {{ if $paginator.HasPrev }}
+                <a href="{{ $paginator.Prev.URL }}" class="px-6 py-3 border border-gray-300 text-gray-900 hover:bg-black hover:text-white transition font-bold text-sm uppercase tracking-wider">
+                    &larr; Previous
+                </a>
+                {{ end }}
+                
+                {{ if $paginator.HasNext }}
+                <a href="{{ $paginator.Next.URL }}" class="px-6 py-3 border border-gray-300 text-gray-900 hover:bg-black hover:text-white transition font-bold text-sm uppercase tracking-wider">
+                    Next &rarr;
+                </a>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
     </section>
+    
     {{ end }}
 </div>
 {{ end }}
