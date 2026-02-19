@@ -1,25 +1,50 @@
 {{ define "main" }}
 <!-- ====================================================================== -->
-<!-- 0. FINANCE TICKER TAPE (Wajib untuk Niche Finance) -->
+<!-- 0. REAL-TIME TICKER TAPE (TRADINGVIEW WIDGET) -->
 <!-- ====================================================================== -->
-<div class="bg-black text-white py-2 overflow-hidden whitespace-nowrap border-b-4 border-red-600 relative z-20">
-    <div class="animate-marquee inline-block text-xs font-mono font-bold tracking-widest">
-        <span class="mx-4 text-green-400">BTC/USD ▲ $64,230</span>
-        <span class="mx-4 text-red-400">ETH/USD ▼ $3,450</span>
-        <span class="mx-4 text-green-400">S&P 500 ▲ 5,100</span>
-        <span class="mx-4 text-green-400">NASDAQ ▲ 16,300</span>
-        <span class="mx-4 text-red-400">GOLD ▼ $2,150</span>
-        <span class="mx-4 text-gray-400">US 10Y YIELD ▲ 4.2%</span>
-        <span class="mx-4 text-green-400">NVDA ▲ $950</span>
-        <span class="mx-4 text-red-400">TSLA ▼ $175</span>
-        <!-- Ulangi agar looping halus -->
-        <span class="mx-4 text-green-400">BTC/USD ▲ $64,230</span>
-        <span class="mx-4 text-red-400">ETH/USD ▼ $3,450</span>
-        <span class="mx-4 text-green-400">S&P 500 ▲ 5,100</span>
-    </div>
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {
+  "symbols": [
+    {
+      "proName": "FOREXCOM:SPXUSD",
+      "title": "S&P 500"
+    },
+    {
+      "proName": "FOREXCOM:NSXUSD",
+      "title": "US 100"
+    },
+    {
+      "proName": "FX_IDC:USDIDR",
+      "title": "USD/IDR"
+    },
+    {
+      "proName": "BITSTAMP:BTCUSD",
+      "title": "Bitcoin"
+    },
+    {
+      "proName": "BITSTAMP:ETHUSD",
+      "title": "Ethereum"
+    },
+    {
+      "description": "Gold",
+      "proName": "OANDA:XAUUSD"
+    },
+    {
+      "description": "Oil",
+      "proName": "TVC:USOIL"
+    }
+  ],
+  "showSymbolLogo": true,
+  "isTransparent": false,
+  "displayMode": "adaptive",
+  "colorTheme": "dark",
+  "locale": "en"
+}
+  </script>
 </div>
-
-<div class="container mx-auto px-4 py-8 max-w-7xl font-sans">
+<!-- ====================================================================== -->
 
     <!-- 1. DATA FETCHING -->
     {{ $articles := where .Site.RegularPages "Section" "articles" }}
