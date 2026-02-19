@@ -111,11 +111,11 @@ def clean_ai_content(text):
     return text.strip()
 
 # ==========================================
-# 📑 TABLE OF CONTENTS GENERATOR (NEW!)
+# 📑 TABLE OF CONTENTS GENERATOR (UPDATED: TOP POSITION)
 # ==========================================
 def insert_table_of_contents(content):
     """
-    Memindai H2 dan H3, membuat daftar link, dan menyuntikkannya sebelum H2 pertama.
+    Memindai H2 dan H3, membuat daftar link, dan MENARUHNYA DI PALING ATAS (TOP).
     """
     # Regex untuk menangkap H2 (##) dan H3 (###)
     headers = re.findall(r'^(##|###)\s+(.+)$', content, re.MULTILINE)
@@ -136,16 +136,8 @@ def insert_table_of_contents(content):
             
     toc_block = "\n" + "\n".join(toc_lines) + "\n\n---\n\n"
     
-    # Suntikkan TOC sebelum header H2 pertama yang ditemukan
-    # Kita split konten berdasarkan '## ' pertama
-    parts = content.split('\n## ', 1)
-    
-    if len(parts) == 2:
-        # parts[0] adalah intro, parts[1] adalah sisa artikel
-        return parts[0] + toc_block + "## " + parts[1]
-    else:
-        # Jika struktur aneh, taruh di paling atas
-        return toc_block + content
+    # 🔥 MODIFIKASI: Langsung return TOC + Content (Agar posisi di paling atas)
+    return toc_block + content
 
 # ==========================================
 # 🧠 SMART SILO LINKING
@@ -182,7 +174,7 @@ def inject_links_into_body(content_body, current_title):
     link_box += "\n"
 
     paragraphs = content_body.split('\n\n')
-    # Inject agak ke bawah karena di atas sudah ada TOC
+    # Inject agak ke bawah
     if len(paragraphs) < 6: return content_body + link_box
     insert_pos = 4
     paragraphs.insert(insert_pos, link_box)
@@ -362,7 +354,7 @@ def main():
     os.makedirs(IMAGE_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    print("🔥 ENGINE STARTED: WRITRACK PRO (TOC + SILO + IMAGE FIX)")
+    print("🔥 ENGINE STARTED: WRITRACK PRO (TOC TOP FIX)")
 
     for source_name, rss_url in RSS_SOURCES.items():
         print(f"\n📡 Reading: {source_name}")
@@ -408,10 +400,11 @@ def main():
             # 2. Clean Content
             clean_body = clean_ai_content(data['content_body'])
             
-            # 3. 🔥 INSERT TABLE OF CONTENTS (NEW)
+            # 3. 🔥 INSERT TABLE OF CONTENTS (NEW LOCATION)
             body_with_toc = insert_table_of_contents(clean_body)
             
             # 4. Inject Links (Silo)
+            # Karena TOC sekarang di atas, link inject tetap bekerja normal di paragraf ke-4/5
             final_body_with_links = inject_links_into_body(body_with_toc, data['title'])
             
             # 5. Fallback Category
